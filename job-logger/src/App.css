@@ -31,6 +31,59 @@
   color: #42566d;
 }
 
+.auth-card h2 {
+  margin: 0;
+  color: #0f243d;
+}
+
+.auth-form {
+  margin-top: 1rem;
+  display: grid;
+  gap: 0.8rem;
+}
+
+.auth-form label {
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.92rem;
+  color: #1a334f;
+}
+
+.auth-form input {
+  border: 1px solid #b8c5d2;
+  border-radius: 8px;
+  padding: 0.6rem 0.7rem;
+  font-size: 0.95rem;
+}
+
+button {
+  width: fit-content;
+  border: 0;
+  border-radius: 8px;
+  padding: 0.6rem 1rem;
+  background: #0f243d;
+  color: #fff;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.error-message {
+  margin: 0;
+  color: #b83131;
+  font-size: 0.9rem;
+}
+
+.success-message {
+  margin: 0;
+  color: #0f6d3d;
+  font-size: 0.9rem;
+}
+
 .app-nav {
   display: flex;
   gap: 0.75rem;
