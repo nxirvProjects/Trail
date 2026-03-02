@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { supabase } from '../lib/supabase';
+import { supabase } from '@/shared/lib/supabase';
 import type { TaskColumn } from '@job-logger/shared';
 
 export function useTaskColumns(userId: string | undefined) {
@@ -40,12 +40,12 @@ export function useTaskColumns(userId: string | undefined) {
     return () => { supabase.removeChannel(channel); };
   }, [userId]);
 
-  const addColumn = useCallback(async (name: string) => {
+  const addColumn = useCallback(async (name: string, columnType: TaskColumn['column_type'] = 'active') => {
     if (!userId) return;
     const maxPos = columns.reduce((max, c) => Math.max(max, c.position), -1);
     const { data } = await supabase
       .from('task_columns')
-      .insert({ user_id: userId, name, position: maxPos + 1 })
+      .insert({ user_id: userId, name, column_type: columnType, position: maxPos + 1 })
       .select()
       .single();
     if (data) {
@@ -61,10 +61,15 @@ export function useTaskColumns(userId: string | undefined) {
     setColumns((prev) => prev.map((c) => c.id === id ? { ...c, name } : c));
   }, []);
 
+  const updateColumnType = useCallback(async (id: string, columnType: TaskColumn['column_type']) => {
+    await supabase.from('task_columns').update({ column_type: columnType }).eq('id', id);
+    setColumns((prev) => prev.map((c) => c.id === id ? { ...c, column_type: columnType } : c));
+  }, []);
+
   const deleteColumn = useCallback(async (id: string) => {
     await supabase.from('task_columns').delete().eq('id', id);
     setColumns((prev) => prev.filter((c) => c.id !== id));
   }, []);
 
-  return { columns, loading, addColumn, renameColumn, deleteColumn };
+  return { columns, loading, addColumn, renameColumn, updateColumnType, deleteColumn };
 }

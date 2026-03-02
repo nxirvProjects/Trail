@@ -1,15 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
-import { supabase } from '../lib/supabase';
-import type { Job, JobStatus } from '@job-logger/shared';
-
-export interface JobInsert {
-  company_name: string;
-  role_title: string;
-  status?: JobStatus;
-  notes?: string;
-  url?: string;
-  date_applied?: string | null;
-}
+import { supabase } from '@/shared/lib/supabase';
+import type { Job, JobInsert, JobStatus } from '@job-logger/shared';
 
 export function useJobs(userId: string | undefined) {
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -84,6 +75,40 @@ export function useJobs(userId: string | undefined) {
     [userId, jobs]
   );
 
+  const addJobsBulk = useCallback(
+    async (jobsToInsert: JobInsert[]) => {
+      if (!userId || jobsToInsert.length === 0) return { data: [], error: null };
+
+      const nextPositionByStatus: Record<JobStatus, number> = {
+        wishlist: jobs.filter((j) => j.status === 'wishlist').reduce((max, j) => Math.max(max, j.position), -1) + 1,
+        applied: jobs.filter((j) => j.status === 'applied').reduce((max, j) => Math.max(max, j.position), -1) + 1,
+        interviewing: jobs.filter((j) => j.status === 'interviewing').reduce((max, j) => Math.max(max, j.position), -1) + 1,
+        negotiating: jobs.filter((j) => j.status === 'negotiating').reduce((max, j) => Math.max(max, j.position), -1) + 1,
+        closed: jobs.filter((j) => j.status === 'closed').reduce((max, j) => Math.max(max, j.position), -1) + 1,
+      };
+
+      const payload = jobsToInsert.map((job) => {
+        const status = job.status ?? 'applied';
+        const position = nextPositionByStatus[status];
+        nextPositionByStatus[status] += 1;
+        return { ...job, status, user_id: userId, position };
+      });
+
+      const { data, error } = await supabase.from('jobs').insert(payload).select();
+
+      if (!error && data) {
+        setJobs((prev) => {
+          const existingIds = new Set(prev.map((j) => j.id));
+          const additions = data.filter((job) => !existingIds.has(job.id));
+          return [...prev, ...additions];
+        });
+      }
+
+      return { data: data ?? [], error };
+    },
+    [userId, jobs]
+  );
+
   const updateJob = useCallback(async (id: string, updates: Partial<Job>) => {
     const { error } = await supabase.from('jobs').update(updates).eq('id', id);
     if (!error) {
@@ -115,5 +140,14 @@ export function useJobs(userId: string | undefined) {
     return { error };
   }, []);
 
-  return { jobs, loading, addJob, updateJob, moveJob, deleteJob };
+  const clearJobs = useCallback(async () => {
+    if (!userId) return { error: null };
+    const { error } = await supabase.from('jobs').delete().eq('user_id', userId);
+    if (!error) {
+      setJobs([]);
+    }
+    return { error };
+  }, [userId]);
+
+  return { jobs, loading, addJob, addJobsBulk, updateJob, moveJob, deleteJob, clearJobs };
 }

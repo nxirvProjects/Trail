@@ -1,9 +1,9 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './hooks/useAuth';
-import { AuthGuard } from './components/AuthGuard';
-import LoginPage from './pages/LoginPage';
-import SignupPage from './pages/SignupPage';
-import BoardPage from './pages/BoardPage';
+import { AuthProvider } from './features/auth/useAuth';
+import { AuthGuard } from './features/auth/AuthGuard';
+import LoginPage from './features/auth/LoginPage';
+import SignupPage from './features/auth/SignupPage';
+import BoardPage from './features/dashboard/BoardPage';
 
 function App() {
   return (

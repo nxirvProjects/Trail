@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { supabase } from '../lib/supabase';
+import { supabase } from '@/shared/lib/supabase';
 import type { Task } from '@job-logger/shared';
 
 export function useTasks(userId: string | undefined) {
@@ -61,10 +61,27 @@ export function useTasks(userId: string | undefined) {
     setTasks((prev) => prev.map((t) => t.id === id ? { ...t, column_id: newColumnId, position: newPosition } : t));
   }, []);
 
+  const replaceTasks = useCallback((nextTasks: Task[]) => {
+    setTasks(nextTasks);
+  }, []);
+
+  const persistTaskOrder = useCallback(async (updates: Array<Pick<Task, 'id' | 'column_id' | 'position'>>) => {
+    if (updates.length === 0) return;
+
+    await Promise.all(
+      updates.map((task) =>
+        supabase
+          .from('tasks')
+          .update({ column_id: task.column_id, position: task.position })
+          .eq('id', task.id)
+      )
+    );
+  }, []);
+
   const deleteTask = useCallback(async (id: string) => {
     await supabase.from('tasks').delete().eq('id', id);
     setTasks((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
-  return { tasks, loading, addTask, updateTask, moveTask, deleteTask };
+  return { tasks, loading, addTask, updateTask, moveTask, replaceTasks, persistTaskOrder, deleteTask };
 }

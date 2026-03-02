@@ -94,16 +94,16 @@ export function JobCardModal({ job, isOpen, onClose, onSave, onCreate, mode }: J
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onClose}>
+    <div className="app-overlay fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}>
       <div
-        className="bg-white rounded-xl shadow-2xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto"
+        className="app-surface-elevated rounded-xl border shadow-2xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between p-4 border-b border-gray-100">
-          <h2 className="text-lg font-semibold text-gray-900">
+        <div className="flex items-center justify-between p-4 border-b border-[var(--app-border)]">
+          <h2 className="text-lg font-semibold app-text">
             {mode === 'create' ? 'Add Job' : 'Edit Job'}
           </h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl leading-none">
+          <button onClick={onClose} className="app-subtle hover:text-[var(--app-text)] text-xl leading-none">
             &times;
           </button>
         </div>
@@ -111,33 +111,33 @@ export function JobCardModal({ job, isOpen, onClose, onSave, onCreate, mode }: J
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Role Title *</label>
+              <label className="block text-sm font-medium app-muted mb-1">Role Title *</label>
               <input
                 type="text"
                 required
                 value={roleTitle}
                 onChange={(e) => setRoleTitle(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="app-input w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 placeholder="Software Engineer"
               />
             </div>
             <div className="col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Company *</label>
+              <label className="block text-sm font-medium app-muted mb-1">Company *</label>
               <input
                 type="text"
                 required
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="app-input w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 placeholder="Acme Inc."
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+              <label className="block text-sm font-medium app-muted mb-1">Status</label>
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value as JobStatus)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="app-input w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
                 {KANBAN_COLUMNS.map((col) => (
                   <option key={col.id} value={col.id}>{col.label}</option>
@@ -145,16 +145,16 @@ export function JobCardModal({ job, isOpen, onClose, onSave, onCreate, mode }: J
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Date Applied</label>
+              <label className="block text-sm font-medium app-muted mb-1">Date Applied</label>
               <input
                 type="date"
                 value={dateApplied}
                 onChange={(e) => setDateApplied(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="app-input w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
             <div className="col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">URL</label>
+              <label className="block text-sm font-medium app-muted mb-1">URL</label>
               <input
                 type="text"
                 value={url}
@@ -162,7 +162,7 @@ export function JobCardModal({ job, isOpen, onClose, onSave, onCreate, mode }: J
                   setUrl(e.target.value);
                   if (urlError) setUrlError(null);
                 }}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="app-input w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 placeholder="https://..."
                 autoCapitalize="none"
                 autoCorrect="off"
@@ -171,23 +171,23 @@ export function JobCardModal({ job, isOpen, onClose, onSave, onCreate, mode }: J
               {urlError && <p className="mt-1 text-xs text-red-600">{urlError}</p>}
             </div>
             <div className="col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+              <label className="block text-sm font-medium app-muted mb-1">Notes</label>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                className="app-input w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
                 placeholder="Any notes about this application..."
               />
             </div>
           </div>
 
-          <div className="flex items-center justify-end pt-2 border-t border-gray-100">
+          <div className="flex items-center justify-end pt-2 border-t border-[var(--app-border)]">
             <div className="flex gap-2">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg"
+                className="px-4 py-2 text-sm app-muted hover:bg-[var(--app-hover)] rounded-lg"
               >
                 Cancel
               </button>

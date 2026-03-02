@@ -3,7 +3,7 @@ import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import type { Task, TaskColumn as TaskColumnType } from '@job-logger/shared';
 import { TaskCard } from './TaskCard';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/shared/ui/button';
 
 interface TaskColumnProps {
   column: TaskColumnType;
@@ -11,10 +11,11 @@ interface TaskColumnProps {
   onTaskClick: (task: Task) => void;
   onAddTask: (columnId: string, title: string) => void;
   onRename: (id: string, name: string) => void;
+  onColumnTypeChange: (id: string, columnType: TaskColumnType['column_type']) => void;
   onDelete: (id: string) => void;
 }
 
-export function TaskColumn({ column, tasks, onTaskClick, onAddTask, onRename, onDelete }: TaskColumnProps) {
+export function TaskColumn({ column, tasks, onTaskClick, onAddTask, onRename, onColumnTypeChange, onDelete }: TaskColumnProps) {
   const { setNodeRef, isOver } = useDroppable({ id: column.id });
   const [addingTask, setAddingTask] = useState(false);
   const [newTaskTitle, setNewTaskTitle] = useState('');
@@ -51,10 +52,12 @@ export function TaskColumn({ column, tasks, onTaskClick, onAddTask, onRename, on
   return (
     <div
       ref={setNodeRef}
-      className={`flex flex-col w-60 min-w-[240px] bg-gray-50 rounded-xl border border-gray-200 ${isOver ? 'bg-indigo-50 border-indigo-200' : ''}`}
+      className={`flex flex-col w-60 min-w-[240px] rounded-xl border app-surface-muted ${
+        column.column_type === 'completed' ? 'opacity-95' : ''
+      } ${isOver ? 'bg-indigo-500/10 border-indigo-400/40' : ''}`}
     >
       {/* Column header */}
-      <div className="flex items-center justify-between px-3 py-2.5 border-b border-gray-200">
+      <div className="flex items-center justify-between px-3 py-2.5 border-b border-[var(--app-border)]">
         {editingName ? (
           <input
             ref={nameRef}
@@ -62,11 +65,11 @@ export function TaskColumn({ column, tasks, onTaskClick, onAddTask, onRename, on
             onChange={(e) => setNameValue(e.target.value)}
             onBlur={handleRename}
             onKeyDown={(e) => { if (e.key === 'Enter') handleRename(); if (e.key === 'Escape') { setNameValue(column.name); setEditingName(false); } }}
-            className="flex-1 text-sm font-semibold text-gray-800 bg-transparent border-b border-indigo-400 outline-none"
+            className="flex-1 text-sm font-semibold app-text bg-transparent border-b border-indigo-400 outline-none"
           />
         ) : (
           <h3
-            className="flex-1 text-sm font-semibold text-gray-800 cursor-pointer truncate"
+            className="flex-1 text-sm font-semibold app-text cursor-pointer truncate"
             onDoubleClick={() => setEditingName(true)}
             title="Double-click to rename"
           >
@@ -74,10 +77,19 @@ export function TaskColumn({ column, tasks, onTaskClick, onAddTask, onRename, on
           </h3>
         )}
         <div className="flex items-center gap-1 ml-2 shrink-0">
-          <span className="text-xs text-gray-400 bg-gray-200 rounded-full px-2">{tasks.length}</span>
+          <select
+            value={column.column_type}
+            onChange={(e) => onColumnTypeChange(column.id, e.target.value as TaskColumnType['column_type'])}
+            className="text-[11px] app-input rounded px-1 py-0.5 app-muted"
+            title="Column type"
+          >
+            <option value="active">Active</option>
+            <option value="completed">Slash Out</option>
+          </select>
+          <span className="text-xs app-subtle bg-[var(--app-hover)] rounded-full px-2">{tasks.length}</span>
           <button
             onClick={() => onDelete(column.id)}
-            className="text-gray-300 hover:text-red-400 text-lg leading-none"
+            className="app-subtle hover:text-red-400 text-lg leading-none"
             title="Delete column"
           >
             &times;
@@ -89,13 +101,18 @@ export function TaskColumn({ column, tasks, onTaskClick, onAddTask, onRename, on
       <SortableContext items={tasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
         <div className="flex flex-col gap-2 p-2 flex-1 min-h-[200px] overflow-y-auto">
           {tasks.map((task) => (
-            <TaskCard key={task.id} task={task} onClick={onTaskClick} />
+            <TaskCard
+              key={task.id}
+              task={task}
+              onClick={onTaskClick}
+              isCompletedColumn={column.column_type === 'completed'}
+            />
           ))}
         </div>
       </SortableContext>
 
       {/* Add task */}
-      <div className="p-2 border-t border-gray-200">
+      <div className="p-2 border-t border-[var(--app-border)]">
         {addingTask ? (
           <div className="flex flex-col gap-1.5">
             <input
@@ -104,7 +121,7 @@ export function TaskColumn({ column, tasks, onTaskClick, onAddTask, onRename, on
               onChange={(e) => setNewTaskTitle(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') handleAddTask(); if (e.key === 'Escape') { setAddingTask(false); setNewTaskTitle(''); } }}
               placeholder="Task title..."
-              className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500"
+              className="app-input w-full px-2 py-1.5 text-sm rounded-lg outline-none focus:ring-2 focus:ring-indigo-500"
             />
             <div className="flex gap-1">
               <Button size="sm" onClick={handleAddTask} className="flex-1">Add</Button>
@@ -114,7 +131,7 @@ export function TaskColumn({ column, tasks, onTaskClick, onAddTask, onRename, on
         ) : (
           <button
             onClick={() => setAddingTask(true)}
-            className="w-full text-left text-xs text-gray-400 hover:text-gray-600 px-1 py-1"
+            className="w-full text-left text-xs app-subtle hover:text-[var(--app-text)] px-1 py-1"
           >
             + Add task
           </button>

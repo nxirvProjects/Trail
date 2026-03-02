@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table';
+import { Badge } from '@/shared/ui/badge';
+import { Input } from '@/shared/ui/input';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/shared/ui/hover-card';
 import type { Job, JobStatus } from '@job-logger/shared';
 import { Pencil, Trash2 } from 'lucide-react';
 
@@ -67,7 +68,7 @@ export function JobsTable({ jobs, onEditJob, onDeleteJob }: JobsTableProps) {
           placeholder="Search company or role..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="max-w-xs focus-visible:ring-0 focus-visible:ring-transparent focus-visible:border-gray-300"
+          className="max-w-xs focus-visible:ring-0 focus-visible:ring-transparent focus-visible:border-[var(--app-border)]"
         />
         <div className="flex gap-1.5">
           {(['all', 'wishlist', 'applied', 'interviewing', 'negotiating', 'closed'] as const).map((s) => (
@@ -77,21 +78,21 @@ export function JobsTable({ jobs, onEditJob, onDeleteJob }: JobsTableProps) {
               className={`px-3 py-1 text-xs rounded-full border transition-colors ${
                 statusFilter === s
                   ? 'bg-indigo-600 text-white border-indigo-600'
-                  : 'border-gray-200 text-gray-500 hover:border-indigo-300 hover:text-indigo-600'
+                  : 'border-[var(--app-border)] text-[var(--app-muted)] hover:border-indigo-300 hover:text-indigo-500'
               }`}
             >
               {s === 'all' ? 'All' : STATUS_LABELS[s]}
             </button>
           ))}
         </div>
-        <span className="ml-auto text-xs text-gray-400">{filtered.length} job{filtered.length !== 1 ? 's' : ''}</span>
+        <span className="ml-auto text-xs app-subtle">{filtered.length} job{filtered.length !== 1 ? 's' : ''}</span>
       </div>
 
       {/* Table */}
-      <div className="flex-1 overflow-auto rounded-xl border border-gray-200 bg-white">
+      <div className="flex-1 overflow-auto rounded-xl border border-[var(--app-border)] app-surface-elevated">
         <Table>
           <TableHeader>
-            <TableRow className="bg-gray-50 border-b border-gray-200">
+            <TableRow className="border-b border-[var(--app-border)] bg-[var(--app-surface-muted)]">
               <TableHead className="h-9">Company</TableHead>
               <TableHead className="h-9">Role</TableHead>
               <TableHead className="h-9">Status</TableHead>
@@ -103,19 +104,31 @@ export function JobsTable({ jobs, onEditJob, onDeleteJob }: JobsTableProps) {
           <TableBody>
             {sorted.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-gray-400 py-12 ">
+                <TableCell colSpan={6} className="text-center app-subtle py-12 ">
                   {jobs.length === 0 ? 'No jobs logged yet — use the extension to log your first application.' : 'No results match your filters.'}
                 </TableCell>
               </TableRow>
             ) : (
               sorted.map((job) => (
-                <TableRow key={job.id} className="border-b border-gray-200">
-                  <TableCell className="py-2 font-medium text-gray-900">{job.company_name}</TableCell>
-                  <TableCell className="py-2 text-gray-700">{job.role_title}</TableCell>
+                <TableRow key={job.id} className="border-b border-[var(--app-border)]">
+                  <TableCell className="py-2 font-medium app-text">
+                    <HoverCard openDelay={180} closeDelay={120}>
+                      <HoverCardTrigger asChild>
+                        <span className="inline-block max-w-[180px] truncate cursor-help">{job.company_name}</span>
+                      </HoverCardTrigger>
+                      <HoverCardContent>
+                        <p className="text-xs font-semibold app-subtle mb-1">Notes</p>
+                        <p className="text-sm leading-relaxed app-text whitespace-pre-wrap break-words">
+                          {job.notes?.trim() ? job.notes : 'No notes yet.'}
+                        </p>
+                      </HoverCardContent>
+                    </HoverCard>
+                  </TableCell>
+                  <TableCell className="py-2 app-muted">{job.role_title}</TableCell>
                   <TableCell className="py-2">
                     <Badge variant={job.status}>{STATUS_LABELS[job.status]}</Badge>
                   </TableCell>
-                  <TableCell className="py-2 text-gray-500 text-sm">
+                  <TableCell className="py-2 app-muted text-sm">
                     {job.date_applied
                       ? new Date(job.date_applied).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
                       : '—'}
@@ -125,7 +138,7 @@ export function JobsTable({ jobs, onEditJob, onDeleteJob }: JobsTableProps) {
                       const href = getSafeHref(job.url);
                       const label = getHostname(job.url);
                       if (!href) {
-                        return <span className="text-gray-400 text-xs truncate max-w-[180px] block">{label}</span>;
+                        return <span className="app-subtle text-xs truncate max-w-[180px] block">{label}</span>;
                       }
 
                       return (
@@ -140,7 +153,7 @@ export function JobsTable({ jobs, onEditJob, onDeleteJob }: JobsTableProps) {
                         </a>
                       );
                     })() : (
-                      <span className="text-gray-300">—</span>
+                      <span className="app-subtle">—</span>
                     )}
                   </TableCell>
                   <TableCell className="py-2">
@@ -148,7 +161,7 @@ export function JobsTable({ jobs, onEditJob, onDeleteJob }: JobsTableProps) {
                       <button
                         type="button"
                         onClick={() => onEditJob(job)}
-                        className="text-gray-400 hover:text-indigo-600 p-1 rounded-md hover:bg-indigo-50"
+                        className="app-subtle hover:text-indigo-500 p-1 rounded-md hover:bg-[var(--app-hover)]"
                         aria-label="Edit job"
                         title="Edit"
                       >
@@ -157,7 +170,7 @@ export function JobsTable({ jobs, onEditJob, onDeleteJob }: JobsTableProps) {
                       <button
                         type="button"
                         onClick={() => onDeleteJob(job.id)}
-                        className="text-gray-400 hover:text-red-600 p-1 rounded-md hover:bg-red-50"
+                        className="app-subtle hover:text-red-400 p-1 rounded-md hover:bg-[var(--app-hover)]"
                         aria-label="Delete job"
                         title="Delete"
                       >

@@ -5,6 +5,7 @@ create table if not exists public.task_columns (
   id         uuid primary key default uuid_generate_v4(),
   user_id    uuid not null references auth.users(id) on delete cascade,
   name       text not null,
+  column_type text not null default 'active' check (column_type in ('active', 'completed')),
   position   integer not null default 0,
   created_at timestamptz not null default now()
 );

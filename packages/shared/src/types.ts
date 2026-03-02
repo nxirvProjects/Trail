@@ -50,6 +50,7 @@ export interface TaskColumn {
   id: string;
   user_id: string;
   name: string;
+  column_type: 'active' | 'completed';
   position: number;
   created_at: string;
 }

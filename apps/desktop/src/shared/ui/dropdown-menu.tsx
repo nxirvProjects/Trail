@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
-import { cn } from '@/lib/utils';
+import { cn } from '@/shared/lib/utils';
 
 const DropdownMenu = DropdownMenuPrimitive.Root;
 
@@ -15,7 +15,7 @@ const DropdownMenuContent = React.forwardRef<
       ref={ref}
       sideOffset={sideOffset}
       className={cn(
-        'z-50 min-w-[180px] overflow-hidden rounded-md border border-gray-200 bg-white p-1 text-gray-900 shadow-md',
+        'z-50 min-w-[180px] overflow-hidden rounded-md border border-[var(--app-border)] bg-[var(--app-popover)] p-1 text-[var(--app-text)] shadow-md',
         className
       )}
       {...props}
@@ -30,7 +30,7 @@ const DropdownMenuLabel = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DropdownMenuPrimitive.Label
     ref={ref}
-    className={cn('px-2 py-1.5 text-xs text-gray-500', className)}
+    className={cn('px-2 py-1.5 text-xs text-[var(--app-subtle)]', className)}
     {...props}
   />
 ));
@@ -42,7 +42,7 @@ const DropdownMenuSeparator = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DropdownMenuPrimitive.Separator
     ref={ref}
-    className={cn('-mx-1 my-1 h-px bg-gray-100', className)}
+    className={cn('-mx-1 my-1 h-px bg-[var(--app-border)]', className)}
     {...props}
   />
 ));
@@ -55,7 +55,7 @@ const DropdownMenuItem = React.forwardRef<
   <DropdownMenuPrimitive.Item
     ref={ref}
     className={cn(
-      'flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-gray-100 data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+      'flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-[var(--app-hover)] data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
       className
     )}
     {...props}
