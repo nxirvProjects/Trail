@@ -1,0 +1,8 @@
+{
+  "name": "job-logger-monorepo",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ]
+}
