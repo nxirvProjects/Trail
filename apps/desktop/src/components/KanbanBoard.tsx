@@ -20,7 +20,7 @@ import { useAuth } from '../hooks/useAuth';
 
 export function KanbanBoard() {
   const { user } = useAuth();
-  const { jobs, loading, addJob, updateJob, moveJob, deleteJob } = useJobs(user?.id);
+  const { jobs, loading, addJob, updateJob, moveJob } = useJobs(user?.id);
   const [activeJob, setActiveJob] = useState<Job | null>(null);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -150,10 +150,6 @@ export function KanbanBoard() {
         onClose={() => setModalOpen(false)}
         onSave={async (id, updates) => {
           const result = await updateJob(id, updates);
-          return { error: result.error };
-        }}
-        onDelete={async (id) => {
-          const result = await deleteJob(id);
           return { error: result.error };
         }}
         onCreate={async (job: JobInsert) => {

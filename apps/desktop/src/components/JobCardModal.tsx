@@ -7,7 +7,6 @@ interface JobCardModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (id: string, updates: Partial<Job>) => Promise<{ error: unknown }>;
-  onDelete: (id: string) => Promise<{ error: unknown }>;
   onCreate: (job: {
     company_name: string;
     role_title: string;
@@ -19,14 +18,30 @@ interface JobCardModalProps {
   mode: 'edit' | 'create';
 }
 
-export function JobCardModal({ job, isOpen, onClose, onSave, onDelete, onCreate, mode }: JobCardModalProps) {
+export function JobCardModal({ job, isOpen, onClose, onSave, onCreate, mode }: JobCardModalProps) {
   const [companyName, setCompanyName] = useState('');
   const [roleTitle, setRoleTitle] = useState('');
-  const [status, setStatus] = useState<JobStatus>('wishlist');
+  const [status, setStatus] = useState<JobStatus>('applied');
   const [notes, setNotes] = useState('');
   const [url, setUrl] = useState('');
+  const [urlError, setUrlError] = useState<string | null>(null);
   const [dateApplied, setDateApplied] = useState('');
   const [saving, setSaving] = useState(false);
+
+  const normalizeUrl = (raw: string): string | null => {
+    const trimmed = raw.trim();
+    if (!trimmed) return '';
+
+    const withProtocol = /^[a-z][a-z\d+\-.]*:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+
+    try {
+      const parsed = new URL(withProtocol);
+      if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return null;
+      return parsed.toString();
+    } catch {
+      return null;
+    }
+  };
 
   useEffect(() => {
     if (job && mode === 'edit') {
@@ -35,13 +50,15 @@ export function JobCardModal({ job, isOpen, onClose, onSave, onDelete, onCreate,
       setStatus(job.status);
       setNotes(job.notes);
       setUrl(job.url);
+      setUrlError(null);
       setDateApplied(job.date_applied ?? '');
     } else if (mode === 'create') {
       setCompanyName('');
       setRoleTitle('');
-      setStatus('wishlist');
+      setStatus('applied');
       setNotes('');
       setUrl('');
+      setUrlError(null);
       setDateApplied('');
     }
   }, [job, mode]);
@@ -51,12 +68,20 @@ export function JobCardModal({ job, isOpen, onClose, onSave, onDelete, onCreate,
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setSaving(true);
+
+    const normalizedUrl = normalizeUrl(url);
+    if (normalizedUrl === null) {
+      setUrlError('Enter a valid URL, e.g. https://example.com/job');
+      setSaving(false);
+      return;
+    }
+
     const data = {
       company_name: companyName,
       role_title: roleTitle,
       status,
       notes,
-      url,
+      url: normalizedUrl,
       date_applied: dateApplied || null,
     };
     if (mode === 'edit' && job) {
@@ -64,14 +89,6 @@ export function JobCardModal({ job, isOpen, onClose, onSave, onDelete, onCreate,
     } else {
       await onCreate(data);
     }
-    setSaving(false);
-    onClose();
-  };
-
-  const handleDelete = async () => {
-    if (!job) return;
-    setSaving(true);
-    await onDelete(job.id);
     setSaving(false);
     onClose();
   };
@@ -139,12 +156,19 @@ export function JobCardModal({ job, isOpen, onClose, onSave, onDelete, onCreate,
             <div className="col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">URL</label>
               <input
-                type="url"
+                type="text"
                 value={url}
-                onChange={(e) => setUrl(e.target.value)}
+                onChange={(e) => {
+                  setUrl(e.target.value);
+                  if (urlError) setUrlError(null);
+                }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 placeholder="https://..."
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
               />
+              {urlError && <p className="mt-1 text-xs text-red-600">{urlError}</p>}
             </div>
             <div className="col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
@@ -158,18 +182,8 @@ export function JobCardModal({ job, isOpen, onClose, onSave, onDelete, onCreate,
             </div>
           </div>
 
-          <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-            {mode === 'edit' && (
-              <button
-                type="button"
-                onClick={handleDelete}
-                disabled={saving}
-                className="px-3 py-2 text-sm text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg"
-              >
-                Delete
-              </button>
-            )}
-            <div className={`flex gap-2 ${mode === 'create' ? 'ml-auto' : ''}`}>
+          <div className="flex items-center justify-end pt-2 border-t border-gray-100">
+            <div className="flex gap-2">
               <button
                 type="button"
                 onClick={onClose}

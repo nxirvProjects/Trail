@@ -64,12 +64,12 @@ export function useJobs(userId: string | undefined) {
     async (job: JobInsert) => {
       if (!userId) return;
       const maxPos = jobs
-        .filter((j) => j.status === (job.status ?? 'wishlist'))
+        .filter((j) => j.status === (job.status ?? 'applied'))
         .reduce((max, j) => Math.max(max, j.position), -1);
 
       const { data, error } = await supabase
         .from('jobs')
-        .insert({ ...job, user_id: userId, position: maxPos + 1 })
+        .insert({ ...job, status: job.status ?? 'applied', user_id: userId, position: maxPos + 1 })
         .select()
         .single();
 
