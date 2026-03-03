@@ -41,6 +41,7 @@ body {
   --app-surface: rgba(255, 255, 255, 0.86);
   --app-surface-elevated: rgba(255, 255, 255, 0.96);
   --app-surface-muted: rgba(249, 250, 251, 0.86);
+  --app-column-surface: #ffffff;
   --app-border: rgba(148, 163, 184, 0.34);
   --app-text: #0f172a;
   --app-muted: #475569;
@@ -56,6 +57,7 @@ body {
   --app-surface: rgba(15, 23, 42, 0.58);
   --app-surface-elevated: rgba(15, 23, 42, 0.82);
   --app-surface-muted: rgba(30, 41, 59, 0.58);
+  --app-column-surface: #1e293b;
   --app-border: rgba(148, 163, 184, 0.26);
   --app-text: #e2e8f0;
   --app-muted: #cbd5e1;
@@ -123,6 +125,16 @@ body {
   color: var(--app-subtle);
 }
 
+:root[data-shell-mode='light'] .canvas-board {
+  border-color: rgba(148, 163, 184, 0.3);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.05);
+}
+
+:root[data-shell-mode='dark'] .canvas-board {
+  border-color: rgba(99, 102, 241, 0.3);
+  box-shadow: 0 0 20px 2px rgba(99, 102, 241, 0.2), inset 0 0 20px 2px rgba(99, 102, 241, 0.05);
+}
+
 .shell-theme-default {
   background-color: #f3f4f6;
 }
@@ -176,3 +188,20 @@ body {
     radial-gradient(circle at 78% 26%, rgba(142, 66, 118, 0.28) 0, rgba(142, 66, 118, 0) 46%),
     linear-gradient(155deg, #2a1b18 0%, #100a09 100%);
 }
+
+/* Theme-aware scrollbars */
+:root[data-shell-mode='light'] {
+  scrollbar-color: rgba(148, 163, 184, 0.35) transparent;
+}
+:root[data-shell-mode='light'] ::-webkit-scrollbar { width: 6px; height: 6px; }
+:root[data-shell-mode='light'] ::-webkit-scrollbar-track { background: transparent; }
+:root[data-shell-mode='light'] ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.35); border-radius: 3px; }
+:root[data-shell-mode='light'] ::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 0.55); }
+
+:root[data-shell-mode='dark'] {
+  scrollbar-color: rgba(148, 163, 184, 0.25) transparent;
+}
+:root[data-shell-mode='dark'] ::-webkit-scrollbar { width: 6px; height: 6px; }
+:root[data-shell-mode='dark'] ::-webkit-scrollbar-track { background: transparent; }
+:root[data-shell-mode='dark'] ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.25); border-radius: 3px; }
+:root[data-shell-mode='dark'] ::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 0.4); }

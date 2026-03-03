@@ -49,10 +49,28 @@ export interface Note {
 export interface TaskColumn {
   id: string;
   user_id: string;
+  roadmap_id: string;
   name: string;
   column_type: 'active' | 'completed';
   position: number;
+  x: number;
+  y: number;
   created_at: string;
+}
+
+export interface Roadmap {
+  id: string;
+  user_id: string;
+  name: string;
+  position: number;
+}
+
+export interface RoadmapLink {
+  id: string;
+  roadmap_id: string;
+  from_column_id: string;
+  to_column_id: string;
+  label: string;
 }
 
 export interface Task {

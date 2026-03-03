@@ -26,6 +26,7 @@ interface ImportSummary {
 
 export default function BoardPage() {
   const [section, setSection] = useState<AppSection>('applications');
+  const [todoTitle, setTodoTitle] = useState('Roadmap');
   const { user } = useAuth();
   const { jobs, updateJob, deleteJob, addJob, addJobsBulk, clearJobs } = useJobs(user?.id);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
@@ -151,7 +152,7 @@ export default function BoardPage() {
     <Layout activeSection={section} onSectionChange={setSection}>
       <div className="flex items-center justify-between mb-4 shrink-0">
         <h2 className="text-xl font-semibold app-text">
-          {section === 'applications' ? 'Applications' : section === 'todos' ? 'To/Dos' : 'Overall Stats'}
+          {section === 'applications' ? 'Applications' : section === 'todos' ? todoTitle : 'Overall Stats'}
         </h2>
 
         {section === 'applications' && (
@@ -183,7 +184,7 @@ export default function BoardPage() {
         className="hidden"
       />
 
-      <div className="flex-1 overflow-hidden flex flex-col">
+      <div className="flex-1 overflow-hidden flex flex-col pb-1">
         {section === 'applications' ? (
           <JobsTable
             jobs={jobs}
@@ -194,7 +195,7 @@ export default function BoardPage() {
             }}
           />
         ) : section === 'todos' ? (
-          <TaskBoard />
+          <TaskBoard onRoadmapTitleChange={setTodoTitle} />
         ) : (
           <div className="flex-1 rounded-xl border border-dashed border-[var(--app-border)] app-surface-elevated flex items-center justify-center">
             <p className="text-sm app-subtle">Overall stats coming soon.</p>
