@@ -90,8 +90,11 @@ export function useTaskColumns(userId: string | undefined, roadmapId: string | n
   }, []);
 
   const updateColumnType = useCallback(async (id: string, columnType: TaskColumn['column_type']) => {
-    await supabase.from('task_columns').update({ column_type: columnType }).eq('id', id);
     setColumns((prev) => prev.map((c) => c.id === id ? { ...c, column_type: columnType } : c));
+    const { error } = await supabase.from('task_columns').update({ column_type: columnType }).eq('id', id);
+    if (error) {
+      setColumns((prev) => prev.map((c) => c.id === id ? { ...c, column_type: columnType === 'active' ? 'completed' : 'active' } : c));
+    }
   }, []);
 
   const deleteColumn = useCallback(async (id: string) => {

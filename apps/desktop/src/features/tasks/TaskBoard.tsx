@@ -20,6 +20,7 @@ import { useRoadmapLinks } from './useRoadmapLinks';
 import { TaskColumn } from './TaskColumn';
 import { TaskCard } from './TaskCard';
 import { Button } from '@/shared/ui/button';
+import { Skeleton } from '@/shared/ui/skeleton';
 
 interface ViewportState {
   x: number;
@@ -40,6 +41,16 @@ interface LinkDragState {
 
 interface TaskBoardProps {
   onRoadmapTitleChange?: (title: string) => void;
+}
+
+function TaskBoardSkeleton() {
+  return (
+    <div className="relative mb-1 flex-1 overflow-hidden rounded-xl border canvas-board">
+      <div className="h-full w-full p-4">
+        <Skeleton className="h-full w-full rounded-lg" />
+      </div>
+    </div>
+  );
 }
 
 export function TaskBoard({ onRoadmapTitleChange }: TaskBoardProps) {
@@ -522,11 +533,7 @@ export function TaskBoard({ onRoadmapTitleChange }: TaskBoardProps) {
   };
 
   if (roadmapLoading || colLoading || taskLoading || linksLoading) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600" />
-      </div>
-    );
+    return <TaskBoardSkeleton />;
   }
 
   return (
