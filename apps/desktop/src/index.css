@@ -34,6 +34,11 @@ body {
   min-height: 100vh;
 }
 
+.shell-theme-default { --app-chrome: #e9ebee; }
+.shell-theme-linen-light { --app-chrome: #ede8df; }
+.shell-theme-mint-grid { --app-chrome: #e2ede7; }
+.shell-theme-sky-dots { --app-chrome: #dde8f6; }
+
 .shell-theme-default,
 .shell-theme-linen-light,
 .shell-theme-mint-grid,
@@ -50,6 +55,10 @@ body {
   --app-overlay: rgba(15, 23, 42, 0.45);
   --app-popover: #ffffff;
 }
+
+.shell-theme-midnight-mesh { --app-chrome: #0e1525; }
+.shell-theme-forest-noise { --app-chrome: #0f1b15; }
+.shell-theme-ember-haze { --app-chrome: #1e1614; }
 
 .shell-theme-midnight-mesh,
 .shell-theme-forest-noise,
@@ -68,6 +77,13 @@ body {
 }
 
 .app-shell {
+  color: var(--app-text);
+  background-color: var(--app-chrome);
+}
+
+.app-chrome-surface {
+  background-color: transparent;
+  border-color: var(--app-border);
   color: var(--app-text);
 }
 
@@ -135,11 +151,12 @@ body {
   box-shadow: 0 0 20px 2px rgba(99, 102, 241, 0.2), inset 0 0 20px 2px rgba(99, 102, 241, 0.05);
 }
 
-.shell-theme-default {
+/* Content area backgrounds — gradient only inside .app-content-bg */
+.shell-theme-default .app-content-bg {
   background-color: #f3f4f6;
 }
 
-.shell-theme-linen-light {
+.shell-theme-linen-light .app-content-bg {
   background-color: #f8f6f1;
   background-image:
     radial-gradient(circle at 18% 20%, rgba(255, 255, 255, 0.9) 0, rgba(255, 255, 255, 0) 46%),
@@ -147,7 +164,7 @@ body {
     linear-gradient(180deg, #fbf8f3 0%, #f2ede4 100%);
 }
 
-.shell-theme-mint-grid {
+.shell-theme-mint-grid .app-content-bg {
   background-color: #edf7f2;
   background-image:
     linear-gradient(rgba(143, 182, 164, 0.14) 1px, transparent 1px),
@@ -156,7 +173,7 @@ body {
   background-size: 26px 26px, 26px 26px, cover;
 }
 
-.shell-theme-sky-dots {
+.shell-theme-sky-dots .app-content-bg {
   background-color: #eaf3ff;
   background-image:
     radial-gradient(circle, rgba(86, 138, 222, 0.16) 1.2px, transparent 1.2px),
@@ -164,7 +181,7 @@ body {
   background-size: 20px 20px, cover;
 }
 
-.shell-theme-midnight-mesh {
+.shell-theme-midnight-mesh .app-content-bg {
   background-color: #0b1220;
   background-image:
     radial-gradient(circle at 14% 18%, rgba(56, 91, 164, 0.44) 0, rgba(56, 91, 164, 0) 42%),
@@ -173,7 +190,7 @@ body {
     linear-gradient(155deg, #10192b 0%, #050912 100%);
 }
 
-.shell-theme-forest-noise {
+.shell-theme-forest-noise .app-content-bg {
   background-color: #0c1611;
   background-image:
     radial-gradient(circle at 20% 18%, rgba(56, 112, 84, 0.36) 0, rgba(56, 112, 84, 0) 44%),
@@ -181,7 +198,60 @@ body {
     linear-gradient(155deg, #1a2a20 0%, #09120d 100%);
 }
 
-.shell-theme-ember-haze {
+.shell-theme-ember-haze .app-content-bg {
+  background-color: #1a1210;
+  background-image:
+    radial-gradient(circle at 16% 18%, rgba(209, 98, 46, 0.34) 0, rgba(209, 98, 46, 0) 42%),
+    radial-gradient(circle at 78% 26%, rgba(142, 66, 118, 0.28) 0, rgba(142, 66, 118, 0) 46%),
+    linear-gradient(155deg, #2a1b18 0%, #100a09 100%);
+}
+
+/* Theme preview thumbnails in settings */
+.theme-preview.shell-theme-default { background-color: #f3f4f6; }
+
+.theme-preview.shell-theme-linen-light {
+  background-color: #f8f6f1;
+  background-image:
+    radial-gradient(circle at 18% 20%, rgba(255, 255, 255, 0.9) 0, rgba(255, 255, 255, 0) 46%),
+    radial-gradient(circle at 78% 14%, rgba(244, 231, 207, 0.45) 0, rgba(244, 231, 207, 0) 48%),
+    linear-gradient(180deg, #fbf8f3 0%, #f2ede4 100%);
+}
+
+.theme-preview.shell-theme-mint-grid {
+  background-color: #edf7f2;
+  background-image:
+    linear-gradient(rgba(143, 182, 164, 0.14) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(143, 182, 164, 0.14) 1px, transparent 1px),
+    linear-gradient(180deg, #f2fbf7 0%, #e7f5ef 100%);
+  background-size: 26px 26px, 26px 26px, cover;
+}
+
+.theme-preview.shell-theme-sky-dots {
+  background-color: #eaf3ff;
+  background-image:
+    radial-gradient(circle, rgba(86, 138, 222, 0.16) 1.2px, transparent 1.2px),
+    linear-gradient(160deg, #f0f7ff 0%, #ddeeff 100%);
+  background-size: 20px 20px, cover;
+}
+
+.theme-preview.shell-theme-midnight-mesh {
+  background-color: #0b1220;
+  background-image:
+    radial-gradient(circle at 14% 18%, rgba(56, 91, 164, 0.44) 0, rgba(56, 91, 164, 0) 42%),
+    radial-gradient(circle at 78% 32%, rgba(27, 118, 153, 0.36) 0, rgba(27, 118, 153, 0) 44%),
+    radial-gradient(circle at 46% 82%, rgba(130, 55, 190, 0.22) 0, rgba(130, 55, 190, 0) 50%),
+    linear-gradient(155deg, #10192b 0%, #050912 100%);
+}
+
+.theme-preview.shell-theme-forest-noise {
+  background-color: #0c1611;
+  background-image:
+    radial-gradient(circle at 20% 18%, rgba(56, 112, 84, 0.36) 0, rgba(56, 112, 84, 0) 44%),
+    radial-gradient(circle at 80% 12%, rgba(83, 127, 96, 0.22) 0, rgba(83, 127, 96, 0) 48%),
+    linear-gradient(155deg, #1a2a20 0%, #09120d 100%);
+}
+
+.theme-preview.shell-theme-ember-haze {
   background-color: #1a1210;
   background-image:
     radial-gradient(circle at 16% 18%, rgba(209, 98, 46, 0.34) 0, rgba(209, 98, 46, 0) 42%),

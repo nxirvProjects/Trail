@@ -123,17 +123,57 @@ export function Layout({ children, activeSection, onSectionChange }: LayoutProps
   }, [resolvedMode]);
 
   return (
-    <div className={`flex h-screen app-shell ${activeThemeOption.className}`}>
-      <aside
-        className={`app-surface border-r transition-all duration-200 ${sidebarCollapsed ? 'w-16' : 'w-60'}`}
-      >
-        <div className="h-14 px-4 flex items-center border-b border-[var(--app-border)]">
-          {sidebarCollapsed ? (
-            <span className="text-base font-bold text-indigo-600">T</span>
-          ) : (
-            <h1 className="text-lg font-bold text-indigo-600">Trail</h1>
-          )}
-        </div>
+    <div
+      className={`grid h-screen app-shell transition-[grid-template-columns] duration-200 ${activeThemeOption.className}`}
+      style={{
+        gridTemplateColumns: sidebarCollapsed ? '4rem minmax(0, 1fr)' : '15rem minmax(0, 1fr)',
+        gridTemplateRows: '3.5rem minmax(0, 1fr)',
+      }}
+    >
+      <div className="app-chrome-surface h-14 px-4 flex items-center">
+        {sidebarCollapsed ? (
+          <span className="text-base font-bold text-indigo-600">T</span>
+        ) : (
+          <h1 className="text-lg font-bold text-indigo-600">Trail</h1>
+        )}
+      </div>
+
+      <header className="h-14 app-chrome-surface flex items-center justify-between px-6">
+        <button
+          type="button"
+          onClick={() => setSidebarCollapsed((prev) => !prev)}
+          className="inline-flex items-center justify-center rounded-lg p-2 text-[var(--app-subtle)] hover:text-[var(--app-text)] hover:bg-[var(--app-hover)]"
+          aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        >
+          {sidebarCollapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
+        </button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              className="rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+              aria-label="Account menu"
+            >
+              <Avatar>
+                <AvatarFallback>{initials}</AvatarFallback>
+              </Avatar>
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>{email || 'Signed in'}</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => setSettingsOpen(true)}>
+              <Settings className="mr-2 h-4 w-4" />
+              Settings
+            </DropdownMenuItem>
+            <DropdownMenuItem className="text-red-600 focus:text-red-600" onClick={signOut}>
+              Sign out
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </header>
+
+      <aside className="app-chrome-surface min-h-0">
         <nav className="p-2 space-y-1">
           {sections.map((section) => (
             <button
@@ -154,41 +194,7 @@ export function Layout({ children, activeSection, onSectionChange }: LayoutProps
         </nav>
       </aside>
 
-      <div className="flex-1 min-w-0 flex flex-col">
-        <header className="h-14 app-surface flex items-center justify-between px-6 border-b shrink-0">
-          <button
-            type="button"
-            onClick={() => setSidebarCollapsed((prev) => !prev)}
-            className="inline-flex items-center justify-center rounded-lg p-2 text-[var(--app-subtle)] hover:text-[var(--app-text)] hover:bg-[var(--app-hover)]"
-            aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          >
-            {sidebarCollapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
-          </button>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button
-                type="button"
-                className="rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-                aria-label="Account menu"
-              >
-                <Avatar>
-                  <AvatarFallback>{initials}</AvatarFallback>
-                </Avatar>
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>{email || 'Signed in'}</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => setSettingsOpen(true)}>
-                <Settings className="mr-2 h-4 w-4" />
-                Settings
-              </DropdownMenuItem>
-              <DropdownMenuItem className="text-red-600 focus:text-red-600" onClick={signOut}>
-                Sign out
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </header>
+      <div className="relative min-h-0 flex flex-col overflow-hidden rounded-tl-lg border-l border-t border-[var(--app-border)] app-content-bg">
         <main className="flex-1 p-6 overflow-hidden flex flex-col">{children}</main>
       </div>
 
@@ -271,7 +277,7 @@ export function Layout({ children, activeSection, onSectionChange }: LayoutProps
                           : 'border-[var(--app-border)] hover:bg-[var(--app-hover)]'
                       }`}
                     >
-                      <div className={`h-14 w-full rounded-md border border-black/10 ${option.className}`} />
+                      <div className={`h-14 w-full rounded-md border border-black/10 theme-preview ${option.className}`} />
                       <p className="mt-2 text-xs font-medium app-muted">{option.label}</p>
                     </button>
                   ))}
