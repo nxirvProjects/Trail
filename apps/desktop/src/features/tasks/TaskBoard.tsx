@@ -11,7 +11,7 @@ import {
   type DragEndEvent,
 } from '@dnd-kit/core';
 import type { RoadmapLink, Task } from '@job-logger/shared';
-import { Plus } from 'lucide-react';
+import { Map as MapIcon, Plus, RefreshCw } from 'lucide-react';
 import { useAuth } from '@/features/auth/useAuth';
 import { useTaskColumns } from './useTaskColumns';
 import { useTasks } from './useTasks';
@@ -21,6 +21,7 @@ import { TaskColumn } from './TaskColumn';
 import { TaskCard } from './TaskCard';
 import { Button } from '@/shared/ui/button';
 import { Skeleton } from '@/shared/ui/skeleton';
+import { ShineBorder } from '@/shared/ui/shine-border';
 
 interface ViewportState {
   x: number;
@@ -46,6 +47,11 @@ interface TaskBoardProps {
 function TaskBoardSkeleton() {
   return (
     <div className="relative mb-1 flex-1 overflow-hidden rounded-xl border canvas-board">
+      <ShineBorder
+        borderWidth={2}
+        duration={0}
+        shineColor={['var(--canvas-shine-color-1)', 'var(--canvas-shine-color-2)', 'var(--canvas-shine-color-3)']}
+      />
       <div className="h-full w-full p-4">
         <Skeleton className="h-full w-full rounded-lg" />
       </div>
@@ -67,6 +73,7 @@ export function TaskBoard({ onRoadmapTitleChange }: TaskBoardProps) {
     deleteColumn,
     replaceColumns,
     moveColumnTo,
+    resizeColumnTo,
   } = useTaskColumns(user?.id, selectedRoadmapId);
   const { tasks, loading: taskLoading, addTask, deleteTask, replaceTasks, persistTaskOrder } = useTasks(user?.id);
 
@@ -183,11 +190,13 @@ export function TaskBoard({ onRoadmapTitleChange }: TaskBoardProps) {
 
       const sourceHeight = columnElementsRef.current[source.id]?.offsetHeight ?? 220;
       const targetHeight = columnElementsRef.current[target.id]?.offsetHeight ?? 220;
+      const sourceWidth = columnElementsRef.current[source.id]?.offsetWidth ?? source.width ?? 240;
+      const targetWidth = columnElementsRef.current[target.id]?.offsetWidth ?? target.width ?? 240;
 
       const forward = target.x >= source.x;
-      const fromX = forward ? source.x + 246 : source.x - 6;
+      const fromX = forward ? source.x + sourceWidth : source.x - 6;
       const fromY = source.y + sourceHeight / 2;
-      const toX = forward ? target.x - 14 : target.x + 246 + 8;
+      const toX = forward ? target.x - 14 : target.x + targetWidth + 8;
       const toY = target.y + targetHeight / 2;
 
       return [{ link, path: buildLinkPath(fromX, fromY, toX, toY).path }];
@@ -200,8 +209,9 @@ export function TaskBoard({ onRoadmapTitleChange }: TaskBoardProps) {
     if (!source) return null;
 
     const sourceHeight = columnElementsRef.current[source.id]?.offsetHeight ?? 220;
+    const sourceWidth = columnElementsRef.current[source.id]?.offsetWidth ?? source.width ?? 240;
     const forward = linkDrag.cursorX >= source.x;
-    const fromX = forward ? source.x + 246 : source.x - 6;
+    const fromX = forward ? source.x + sourceWidth : source.x - 6;
     const fromY = source.y + sourceHeight / 2;
 
     return buildLinkPath(fromX, fromY, linkDrag.cursorX, linkDrag.cursorY).path;
@@ -308,6 +318,8 @@ export function TaskBoard({ onRoadmapTitleChange }: TaskBoardProps) {
     if (columnDragRef.current || linkDragRef.current || linkContextMenu) return;
     if ((event.target as HTMLElement).closest('[data-column-root="true"]')) return;
 
+    if (event.cancelable) event.preventDefault();
+
     panStateRef.current = {
       pointerId: event.pointerId,
       startX: event.clientX,
@@ -340,7 +352,7 @@ export function TaskBoard({ onRoadmapTitleChange }: TaskBoardProps) {
     if (!boardRect) return;
 
     const factor = event.deltaY > 0 ? 0.92 : 1.08;
-    const nextScale = Math.min(2.2, Math.max(0.5, viewport.scale * factor));
+    const nextScale = Math.min(2.2, Math.max(0.2, viewport.scale * factor));
     if (nextScale === viewport.scale) return;
 
     const pointerX = event.clientX - boardRect.left;
@@ -517,6 +529,20 @@ export function TaskBoard({ onRoadmapTitleChange }: TaskBoardProps) {
     }
   };
 
+  const handleResizeColumn = useCallback(async (columnId: string, width: number, height: number, persist = false) => {
+    const clampedWidth = Math.max(220, Math.min(560, width));
+    const clampedHeight = Math.max(220, Math.min(620, height));
+
+    replaceColumns(
+      columnsRef.current.map((column) =>
+        column.id === columnId ? { ...column, width: clampedWidth, height: clampedHeight } : column
+      )
+    );
+
+    if (!persist) return;
+    await resizeColumnTo(columnId, clampedWidth, clampedHeight);
+  }, [replaceColumns, resizeColumnTo]);
+
   const handleDeleteRoadmapCascade = async (roadmapId: string | null) => {
     if (!roadmapId) return;
     const { error } = await deleteRoadmapCascade(roadmapId);
@@ -530,6 +556,21 @@ export function TaskBoard({ onRoadmapTitleChange }: TaskBoardProps) {
     if (selectedRoadmapId === roadmapId) {
       setSelectedRoadmapId(null);
     }
+  };
+
+  const handleResetView = () => {
+    if (columns.length === 0) return;
+
+    const firstColumn = [...columns].sort((a, b) => {
+      if (a.x !== b.x) return a.x - b.x;
+      return a.y - b.y;
+    })[0];
+
+    setViewport((prev) => ({
+      ...prev,
+      x: 80 - firstColumn.x * prev.scale,
+      y: 80 - firstColumn.y * prev.scale,
+    }));
   };
 
   if (roadmapLoading || colLoading || taskLoading || linksLoading) {
@@ -549,8 +590,16 @@ export function TaskBoard({ onRoadmapTitleChange }: TaskBoardProps) {
       }}
     >
       <div className="mb-3 flex items-center gap-2">
-        <Button size="sm" variant="outline" onClick={() => setRoadmapsDrawerOpen(true)}>Roadmaps</Button>
-        <Button size="sm" variant="outline" onClick={() => setViewport({ x: 80, y: 80, scale: 1 })}>Reset view</Button>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => setRoadmapsDrawerOpen(true)}
+          title="Roadmaps"
+          aria-label="Open roadmaps"
+          className="ml-auto px-2"
+        >
+          <MapIcon className="h-4 w-4" />
+        </Button>
       </div>
 
       {addingColumn && (
@@ -582,9 +631,19 @@ export function TaskBoard({ onRoadmapTitleChange }: TaskBoardProps) {
 
       <div className="mb-2 flex items-center gap-2">
         <Button size="sm" variant="outline" onClick={() => setAddingColumn((value) => !value)}>+ Add column</Button>
-        <Button size="sm" variant="outline" onClick={() => setViewport((prev) => ({ ...prev, scale: Math.max(0.5, prev.scale - 0.1) }))}>-</Button>
+        <Button size="sm" variant="outline" onClick={() => setViewport((prev) => ({ ...prev, scale: Math.max(0.2, prev.scale - 0.1) }))}>-</Button>
         <span className="text-xs app-subtle w-14 text-center">{Math.round(viewport.scale * 100)}%</span>
         <Button size="sm" variant="outline" onClick={() => setViewport((prev) => ({ ...prev, scale: Math.min(2.2, prev.scale + 0.1) }))}>+</Button>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={handleResetView}
+          title="Reset view"
+          aria-label="Reset view"
+          className="ml-auto px-2"
+        >
+          <RefreshCw className="h-4 w-4" />
+        </Button>
       </div>
 
       <div
@@ -709,17 +768,24 @@ export function TaskBoard({ onRoadmapTitleChange }: TaskBoardProps) {
         ref={boardRef}
         className="relative flex-1 overflow-hidden rounded-xl border canvas-board mb-1"
         style={{ touchAction: 'none' }}
+        draggable={false}
+        onDragStart={(event) => event.preventDefault()}
         onPointerDown={handleBoardPointerDown}
         onPointerMove={handleBoardPointerMove}
         onPointerUp={handleBoardPointerUp}
         onPointerCancel={handleBoardPointerUp}
       >
+        <ShineBorder
+          borderWidth={2}
+          duration={12}
+          shineColor={['var(--canvas-shine-color-1)', 'var(--canvas-shine-color-2)', 'var(--canvas-shine-color-3)']}
+        />
         <div
           className="absolute inset-0"
           style={{ transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.scale})`, transformOrigin: '0 0' }}
         >
           <div className="relative" style={{ width: 5200, height: 3600 }}>
-            <svg className="absolute inset-0 h-full w-full z-10 pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+            <svg className="absolute inset-0 h-full w-full z-10 pointer-events-none overflow-visible" xmlns="http://www.w3.org/2000/svg">
               <defs>
                 <marker id="roadmap-arrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
                   <polygon points="0 0, 10 3.5, 0 7" fill="#818cf8" />
@@ -756,7 +822,7 @@ export function TaskBoard({ onRoadmapTitleChange }: TaskBoardProps) {
               )}
             </svg>
 
-            <svg className="absolute inset-0 h-full w-full z-20" xmlns="http://www.w3.org/2000/svg">
+            <svg className="absolute inset-0 h-full w-full z-20 overflow-visible" xmlns="http://www.w3.org/2000/svg">
               {linkGeometry.map(({ link, path }) => (
                 <path
                   key={`hit-${link.id}`}
@@ -778,7 +844,12 @@ export function TaskBoard({ onRoadmapTitleChange }: TaskBoardProps) {
             </svg>
 
             {visibleColumns.map((col) => (
-              <div key={col.id} data-column-root="true" className="absolute z-40" style={{ left: col.x, top: col.y }}>
+              <div
+                key={col.id}
+                data-column-root="true"
+                className="absolute z-40"
+                style={{ left: col.x, top: col.y }}
+              >
                 <TaskColumn
                   column={col}
                   tasks={tasksByColumn[col.id] ?? []}
@@ -791,6 +862,8 @@ export function TaskBoard({ onRoadmapTitleChange }: TaskBoardProps) {
                   linkingSourceColumnId={linkDrag?.sourceColumnId ?? null}
                   onRegisterColumnElement={registerColumnElement}
                   onStartColumnDrag={handleStartColumnDrag}
+                  onResizeColumn={handleResizeColumn}
+                  viewportScale={viewport.scale}
                   onDelete={deleteColumn}
                 />
               </div>

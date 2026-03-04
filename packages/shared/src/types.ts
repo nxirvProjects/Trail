@@ -55,6 +55,8 @@ export interface TaskColumn {
   position: number;
   x: number;
   y: number;
+  width: number;
+  height: number;
   created_at: string;
 }
 

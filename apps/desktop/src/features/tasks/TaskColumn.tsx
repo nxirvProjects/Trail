@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback, type PointerEvent } from 'react';
+import { useState, useRef, useEffect, useCallback, type PointerEvent as ReactPointerEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
@@ -15,10 +15,12 @@ interface TaskColumnProps {
   onRename: (id: string, name: string) => void;
   onColumnTypeChange: (id: string, columnType: TaskColumnType['column_type']) => void;
   onDeleteTask: (id: string) => void;
-  onStartLinkDrag: (event: PointerEvent<HTMLButtonElement>, columnId: string) => void;
+  onStartLinkDrag: (event: ReactPointerEvent<HTMLButtonElement>, columnId: string) => void;
   linkingSourceColumnId: string | null;
   onRegisterColumnElement: (columnId: string, element: HTMLDivElement | null) => void;
-  onStartColumnDrag: (event: PointerEvent<HTMLElement>, columnId: string) => void;
+  onStartColumnDrag: (event: ReactPointerEvent<HTMLElement>, columnId: string) => void;
+  onResizeColumn: (columnId: string, width: number, height: number, persist?: boolean) => void;
+  viewportScale: number;
   onDelete: (id: string) => void;
 }
 
@@ -34,6 +36,8 @@ export function TaskColumn({
   linkingSourceColumnId,
   onRegisterColumnElement,
   onStartColumnDrag,
+  onResizeColumn,
+  viewportScale,
   onDelete,
 }: TaskColumnProps) {
   const { setNodeRef: setDroppableNodeRef, isOver } = useDroppable({ id: column.id });
@@ -44,6 +48,12 @@ export function TaskColumn({
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const nameRef = useRef<HTMLInputElement>(null);
+  const viewportScaleRef = useRef(viewportScale);
+  const resizeStateRef = useRef<{ pointerId: number; startX: number; startY: number; startWidth: number; startHeight: number } | null>(null);
+
+  useEffect(() => {
+    viewportScaleRef.current = viewportScale;
+  }, [viewportScale]);
 
   useEffect(() => {
     if (addingTask) inputRef.current?.focus();
@@ -78,7 +88,7 @@ export function TaskColumn({
   };
 
   const isLinkingSource = linkingSourceColumnId === column.id;
-  const containerClass = `flex flex-col w-60 min-w-[240px] rounded-xl border border-[var(--app-border)] ${
+  const containerClass = `relative flex flex-col min-w-[220px] min-h-[220px] rounded-xl border border-[var(--app-border)] overflow-hidden ${
     column.column_type === 'completed' ? 'opacity-95' : ''
   } ${isOver ? 'bg-indigo-500/10 border-indigo-400/40' : ''} ${isLinkingSource ? 'ring-2 ring-indigo-400' : ''}`;
 
@@ -90,13 +100,13 @@ export function TaskColumn({
     [column.id, onRegisterColumnElement, setDroppableNodeRef]
   );
 
-  const handleColumnPointerDown = (event: PointerEvent<HTMLDivElement>) => {
+  const handleColumnPointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
     const target = event.target as HTMLElement;
     if (target.closest('button, input, textarea, select, a, [data-task-card="true"], [data-no-column-drag="true"]')) {
       return;
     }
 
-    onStartColumnDrag(event as unknown as PointerEvent<HTMLElement>, column.id);
+    onStartColumnDrag(event as unknown as ReactPointerEvent<HTMLElement>, column.id);
   };
 
   const handleContextMenu = (event: React.MouseEvent) => {
@@ -105,12 +115,72 @@ export function TaskColumn({
     setContextMenu({ x: event.clientX, y: event.clientY });
   };
 
+  const handleResizePointerMove = useCallback((event: globalThis.PointerEvent) => {
+    const resizeState = resizeStateRef.current;
+    if (!resizeState || resizeState.pointerId !== event.pointerId) return;
+
+    const scale = viewportScaleRef.current;
+    const dx = (event.clientX - resizeState.startX) / scale;
+    const dy = (event.clientY - resizeState.startY) / scale;
+    const delta = Math.abs(dx) > Math.abs(dy) ? dx : dy;
+
+    const width = Math.max(220, Math.min(560, resizeState.startWidth + delta));
+    const height = Math.max(220, Math.min(620, resizeState.startHeight + delta));
+    onResizeColumn(column.id, width, height);
+  }, [column.id, onResizeColumn]);
+
+  const handleResizePointerUp = useCallback((event: globalThis.PointerEvent) => {
+    const resizeState = resizeStateRef.current;
+    if (!resizeState || resizeState.pointerId !== event.pointerId) return;
+
+    const scale = viewportScaleRef.current;
+    const dx = (event.clientX - resizeState.startX) / scale;
+    const dy = (event.clientY - resizeState.startY) / scale;
+    const delta = Math.abs(dx) > Math.abs(dy) ? dx : dy;
+
+    const width = Math.max(220, Math.min(560, resizeState.startWidth + delta));
+    const height = Math.max(220, Math.min(620, resizeState.startHeight + delta));
+    onResizeColumn(column.id, width, height, true);
+
+    resizeStateRef.current = null;
+    window.removeEventListener('pointermove', handleResizePointerMove);
+    window.removeEventListener('pointerup', handleResizePointerUp);
+  }, [column.id, onResizeColumn, handleResizePointerMove]);
+
+  useEffect(() => {
+    return () => {
+      window.removeEventListener('pointermove', handleResizePointerMove);
+      window.removeEventListener('pointerup', handleResizePointerUp);
+    };
+  }, [handleResizePointerMove, handleResizePointerUp]);
+
+  const handleResizePointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (event.button !== 0) return;
+    if (event.cancelable) event.preventDefault();
+    event.stopPropagation();
+
+    resizeStateRef.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      startWidth: column.width ?? 240,
+      startHeight: column.height ?? 260,
+    };
+
+    window.addEventListener('pointermove', handleResizePointerMove);
+    window.addEventListener('pointerup', handleResizePointerUp);
+  };
+
   return (
     <>
       <div
         ref={setMergedRef}
         className={`${containerClass} cursor-grab active:cursor-grabbing`}
-        style={{ backgroundColor: 'var(--app-column-surface)' }}
+        style={{
+          backgroundColor: 'var(--app-column-surface)',
+          width: column.width ?? 240,
+          height: column.height ?? 260,
+        }}
         onPointerDown={handleColumnPointerDown}
         onContextMenu={handleContextMenu}
       >
@@ -157,7 +227,7 @@ export function TaskColumn({
         </div>
 
         <SortableContext items={tasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
-          <div className="flex flex-col gap-2 p-2 flex-1 min-h-[200px] overflow-y-auto">
+          <div className="flex flex-col gap-2 p-2 flex-1 overflow-y-auto">
             {tasks.map((task) => (
               <TaskCard
                 key={task.id}
@@ -201,6 +271,13 @@ export function TaskColumn({
             </button>
           )}
         </div>
+
+        <div
+          data-no-column-drag="true"
+          onPointerDown={handleResizePointerDown}
+          className="absolute bottom-0 right-0 h-3 w-3 cursor-nwse-resize"
+        />
+
       </div>
 
       {contextMenu && createPortal(

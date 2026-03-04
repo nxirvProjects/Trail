@@ -27,6 +27,7 @@ interface ImportSummary {
 export default function BoardPage() {
   const [section, setSection] = useState<AppSection>('applications');
   const [todoTitle, setTodoTitle] = useState('Roadmap');
+  const formattedTodoTitle = todoTitle.replace(/\b\w/g, (char) => char.toUpperCase());
   const { user } = useAuth();
   const { jobs, updateJob, deleteJob, addJob, addJobsBulk, clearJobs } = useJobs(user?.id);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
@@ -151,8 +152,8 @@ export default function BoardPage() {
   return (
     <Layout activeSection={section} onSectionChange={setSection}>
       <div className="flex items-center justify-between mb-4 shrink-0">
-        <h2 className="text-xl font-semibold app-text">
-          {section === 'applications' ? 'Applications' : section === 'todos' ? todoTitle : 'Overall Stats'}
+        <h2 className={`font-semibold tracking-tight app-text ${section === 'todos' ? 'text-2xl' : 'text-xl'}`}>
+          {section === 'applications' ? 'Applications' : section === 'todos' ? formattedTodoTitle : 'Overall Stats'}
         </h2>
 
         {section === 'applications' && (

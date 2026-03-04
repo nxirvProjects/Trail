@@ -73,6 +73,8 @@ export function useTaskColumns(userId: string | undefined, roadmapId: string | n
         position: maxPos + 1,
         x: maxX + 320,
         y: yBase,
+        width: 240,
+        height: 260,
       })
       .select()
       .single();
@@ -127,6 +129,14 @@ export function useTaskColumns(userId: string | undefined, roadmapId: string | n
     return { error };
   }, []);
 
+  const resizeColumnTo = useCallback(async (id: string, width: number, height: number) => {
+    const { error } = await supabase.from('task_columns').update({ width, height }).eq('id', id);
+    if (!error) {
+      setColumns((prev) => prev.map((column) => (column.id === id ? { ...column, width, height } : column)));
+    }
+    return { error };
+  }, []);
+
   return {
     columns,
     loading,
@@ -137,5 +147,6 @@ export function useTaskColumns(userId: string | undefined, roadmapId: string | n
     replaceColumns,
     persistColumnOrder,
     moveColumnTo,
+    resizeColumnTo,
   };
 }

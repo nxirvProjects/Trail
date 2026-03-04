@@ -44,7 +44,7 @@ const BACKGROUND_THEME_STORAGE_KEY = 'trail.backgroundTheme';
 
 const sections: { id: AppSection; label: string; icon: ReactNode }[] = [
   { id: 'applications', label: 'Applications', icon: <Briefcase className="h-4 w-4" /> },
-  { id: 'todos', label: 'To/Dos', icon: <ListTodo className="h-4 w-4" /> },
+  { id: 'todos', label: 'Roadmaps', icon: <ListTodo className="h-4 w-4" /> },
   { id: 'stats', label: 'Overall Stats', icon: <BarChart3 className="h-4 w-4" /> },
 ];
 

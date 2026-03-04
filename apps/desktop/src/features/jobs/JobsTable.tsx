@@ -56,9 +56,19 @@ export function JobsTable({ jobs, onEditJob, onDeleteJob }: JobsTableProps) {
     return matchesSearch && matchesStatus;
   });
 
-  const sorted = [...filtered].sort(
-    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-  );
+  const sorted = [...filtered].sort((a, b) => {
+    const aApplied = a.date_applied ? new Date(a.date_applied).getTime() : null;
+    const bApplied = b.date_applied ? new Date(b.date_applied).getTime() : null;
+
+    if (aApplied !== null && bApplied !== null && aApplied !== bApplied) {
+      return bApplied - aApplied;
+    }
+
+    if (aApplied === null && bApplied !== null) return 1;
+    if (aApplied !== null && bApplied === null) return -1;
+
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  });
 
   return (
     <div className="flex flex-col gap-3 h-full">
