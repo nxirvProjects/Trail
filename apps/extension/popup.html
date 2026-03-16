@@ -151,6 +151,28 @@
   <div id="settingsView" class="content hidden">
     <h2 class="section-header">Settings</h2>
 
+    <!-- Cloud Sync Section -->
+    <div class="settings-section cloud-sync-section">
+      <h3 class="settings-section-title">Cloud Sync</h3>
+      <!-- Login Form (shown when logged out) -->
+      <div id="loginForm" class="cloud-sync-form">
+        <p class="cloud-sync-description">Sign in to sync your applications to the cloud and access them in the desktop app.</p>
+        <input type="email" id="loginEmail" class="cloud-sync-input" placeholder="Email">
+        <input type="password" id="loginPassword" class="cloud-sync-input" placeholder="Password">
+        <button id="loginBtn" class="btn btn-primary btn-full">Sign In</button>
+        <p id="loginError" class="cloud-sync-error" style="display: none;"></p>
+      </div>
+      <!-- Logged In State (shown when logged in) -->
+      <div id="loggedInState" class="cloud-sync-status" style="display: none;">
+        <div class="cloud-sync-user">
+          <span class="cloud-sync-icon">&#9989;</span>
+          <span id="loggedInEmail" class="cloud-sync-email"></span>
+        </div>
+        <p class="cloud-sync-description">Your applications are being synced to the cloud.</p>
+        <button id="logoutBtn" class="btn btn-secondary btn-full">Sign Out</button>
+      </div>
+    </div>
+
     <!-- Quick Log Toggle -->
     <div class="settings-section">
       <h3 class="settings-section-title">Quick Log Button</h3>
@@ -187,6 +209,7 @@
     </div>
   </div>
 
+  <script src="supabase.min.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

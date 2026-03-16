@@ -1,3 +1,20 @@
+// Supabase client
+const SUPABASE_URL = 'https://ypuaozybbizqtnspmrre.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_NIQnYm194zkex7mbrElYjw_M0G3iRW-';
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: {
+    storage: {
+      getItem: async (key) => (await chrome.storage.local.get(key))[key] || null,
+      setItem: async (key, value) => chrome.storage.local.set({ [key]: value }),
+      removeItem: async (key) => chrome.storage.local.remove(key),
+    },
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: false,
+  }
+});
+let supabaseUser = null;
+
 // State management
 let applications = [];
 let links = [];
@@ -14,6 +31,127 @@ let gamification = {
   lastWeeklyCheck: null, // Last date weekly check was performed
   activityLog: [] // Array of {timestamp: ISO, type: 'xp_gain'|'level_up'|'penalty', message: string, xpChange: number}
 };
+
+// Supabase Auth Functions
+async function initSupabaseAuth() {
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if (session?.user) {
+    supabaseUser = session.user;
+  }
+  updateCloudSyncUI();
+
+  supabaseClient.auth.onAuthStateChange((_event, session) => {
+    supabaseUser = session?.user || null;
+    updateCloudSyncUI();
+  });
+}
+
+async function supabaseLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  const errorEl = document.getElementById('loginError');
+
+  if (!email || !password) {
+    errorEl.textContent = 'Please enter email and password.';
+    errorEl.style.display = 'block';
+    return;
+  }
+
+  const loginBtn = document.getElementById('loginBtn');
+  loginBtn.disabled = true;
+  loginBtn.textContent = 'Signing in...';
+  errorEl.style.display = 'none';
+
+  const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+
+  loginBtn.disabled = false;
+  loginBtn.textContent = 'Sign In';
+
+  if (error) {
+    errorEl.textContent = error.message;
+    errorEl.style.display = 'block';
+  } else {
+    document.getElementById('loginEmail').value = '';
+    document.getElementById('loginPassword').value = '';
+  }
+}
+
+async function supabaseLogout() {
+  await supabaseClient.auth.signOut();
+  supabaseUser = null;
+  updateCloudSyncUI();
+}
+
+function updateCloudSyncUI() {
+  const loginForm = document.getElementById('loginForm');
+  const loggedInState = document.getElementById('loggedInState');
+  const loggedInEmail = document.getElementById('loggedInEmail');
+
+  if (supabaseUser) {
+    loginForm.style.display = 'none';
+    loggedInState.style.display = 'block';
+    loggedInEmail.textContent = supabaseUser.email;
+  } else {
+    loginForm.style.display = 'block';
+    loggedInState.style.display = 'none';
+  }
+}
+
+// Sync a single job to Supabase
+async function syncJobToSupabase(app) {
+  if (!supabaseUser) return;
+  try {
+    const { data: existing } = await supabaseClient
+      .from('jobs')
+      .select('position')
+      .eq('user_id', supabaseUser.id)
+      .eq('status', 'applied')
+      .order('position', { ascending: false })
+      .limit(1);
+    const nextPos = (existing?.[0]?.position ?? -1) + 1;
+
+    await supabaseClient.from('jobs').insert({
+      user_id: supabaseUser.id,
+      company_name: app.company,
+      role_title: app.role,
+      url: app.url || '',
+      date_applied: app.date ? app.date.split('T')[0] : null,
+      status: 'applied',
+      position: nextPos,
+    });
+  } catch (err) {
+    console.error('Failed to sync job to Supabase:', err);
+  }
+}
+
+// Bulk sync jobs to Supabase
+async function syncJobsBulkToSupabase(apps) {
+  if (!supabaseUser || apps.length === 0) return;
+  try {
+    const { data: existing } = await supabaseClient
+      .from('jobs')
+      .select('position')
+      .eq('user_id', supabaseUser.id)
+      .eq('status', 'applied')
+      .order('position', { ascending: false })
+      .limit(1);
+    let nextPos = (existing?.[0]?.position ?? -1) + 1;
+
+    const rows = apps.map(app => ({
+      user_id: supabaseUser.id,
+      company_name: app.company,
+      role_title: app.role,
+      url: app.url || '',
+      date_applied: app.date ? app.date.split('T')[0] : null,
+      status: 'applied',
+      position: nextPos++,
+    }));
+
+    await supabaseClient.from('jobs').insert(rows);
+  } catch (err) {
+    console.error('Failed to bulk sync jobs to Supabase:', err);
+  }
+}
 
 // Custom Modal Functions
 function showCustomModal(title, message, type = 'alert', defaultValue = '') {
@@ -141,6 +279,7 @@ async function customAlert(message) {
 document.addEventListener('DOMContentLoaded', () => {
   loadData();
   setupEventListeners();
+  initSupabaseAuth();
 });
 
 // Listen for storage changes from other contexts (content script, other popups)
@@ -240,6 +379,13 @@ function setupEventListeners() {
   if (clearDataBtn) {
     clearDataBtn.addEventListener('click', clearAllData);
   }
+
+  // Cloud sync auth buttons
+  document.getElementById('loginBtn').addEventListener('click', supabaseLogin);
+  document.getElementById('logoutBtn').addEventListener('click', supabaseLogout);
+  document.getElementById('loginPassword').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') supabaseLogin();
+  });
 }
 
 // Tab switching
@@ -307,6 +453,7 @@ async function logCurrentJob() {
   await incrementStreak();
   await awardXP(10, '1 application'); // Award 10 base XP with streak multiplier
   await saveApplications();
+  await syncJobToSupabase(application);
 }
 
 // Render applications
@@ -527,6 +674,9 @@ async function importFromCSV(e) {
 
     // Save gamification after streak is recalculated
     await saveGamification();
+
+    // Sync imported jobs to Supabase
+    await syncJobsBulkToSupabase(tempApps);
 
     const message = invalidCount > 0
       ? `CSV imported! ${validCount} valid rows, ${invalidCount} skipped (invalid dates).`

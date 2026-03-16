@@ -223,6 +223,11 @@ function removeFloatingButton() {
 
 // Handle quick log click
 async function handleQuickLog() {
+  if (!isExtensionValid()) {
+    alert('Job Logger extension was updated. Please refresh this page and try again.');
+    return;
+  }
+
   // Extract job details from page
   const jobDetails = extractJobDetails();
 
@@ -353,8 +358,22 @@ function closeModal() {
   }
 }
 
+// Check if extension context is still valid
+function isExtensionValid() {
+  try {
+    return !!chrome.runtime?.id;
+  } catch (e) {
+    return false;
+  }
+}
+
 // Save application directly without modal
 async function saveApplicationDirect(company, role, url) {
+  if (!isExtensionValid()) {
+    alert('Job Logger extension was updated. Please refresh this page and try again.');
+    return;
+  }
+
   // Get existing applications
   const result = await chrome.storage.local.get(['applications', 'gamification']);
   const applications = result.applications || [];
@@ -442,6 +461,12 @@ async function saveApplicationDirect(company, role, url) {
 
   // Save to storage
   await chrome.storage.local.set({ applications, gamification });
+
+  // Sync to Supabase via background service worker
+  chrome.runtime.sendMessage({
+    type: 'SYNC_JOB_TO_SUPABASE',
+    application
+  }).catch(err => console.log('Supabase sync message failed:', err));
 
   // Update floating button appearance
   await updateFloatingButtonAppearance();
