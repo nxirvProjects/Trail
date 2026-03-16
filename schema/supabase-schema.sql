@@ -27,6 +27,10 @@ create table public.jobs (
 create index idx_jobs_user_id on public.jobs(user_id);
 create index idx_jobs_status on public.jobs(user_id, status, position);
 
+-- Prevent duplicate jobs per user (same company + role + url + date)
+create unique index idx_jobs_no_duplicates
+  on public.jobs (user_id, lower(company_name), lower(role_title), coalesce(lower(url), ''), coalesce(date_applied, '1970-01-01'));
+
 -- ============================================================
 -- CONTACTS TABLE
 -- ============================================================

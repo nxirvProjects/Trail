@@ -94,7 +94,10 @@ export function useJobs(userId: string | undefined) {
         return { ...job, status, user_id: userId, position };
       });
 
-      const { data, error } = await supabase.from('jobs').insert(payload).select();
+      const { data, error } = await supabase
+        .from('jobs')
+        .upsert(payload, { ignoreDuplicates: true })
+        .select();
 
       if (!error && data) {
         setJobs((prev) => {
