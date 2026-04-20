@@ -279,3 +279,30 @@ body {
 :root[data-shell-mode='dark'] ::-webkit-scrollbar-track { background: transparent; }
 :root[data-shell-mode='dark'] ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.25); border-radius: 3px; }
 :root[data-shell-mode='dark'] ::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 0.4); }
+
+/* React Flow theme integration */
+.react-flow__renderer { background: transparent; }
+.react-flow__pane { background: transparent; }
+.react-flow__node { background: transparent; border: none; padding: 0; }
+.react-flow__handle {
+  width: 12px !important;
+  height: 12px !important;
+  background: #818cf8 !important;
+  border: 2px solid var(--app-bg) !important;
+}
+.react-flow__controls {
+  background: var(--app-surface-elevated, var(--app-surface)) !important;
+  border: 1px solid var(--app-border) !important;
+  border-radius: 8px !important;
+}
+.react-flow__controls-button {
+  background: transparent !important;
+  border-color: var(--app-border) !important;
+  color: var(--app-text) !important;
+  fill: var(--app-text) !important;
+}
+.react-flow__minimap {
+  background: var(--app-surface-elevated, var(--app-surface)) !important;
+  border: 1px solid var(--app-border) !important;
+  border-radius: 8px !important;
+}
