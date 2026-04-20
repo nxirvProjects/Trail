@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import type { Task, TaskColumn as TaskColumnType } from '@job-logger/shared';
+import { GripVertical } from 'lucide-react';
 import { TaskCard } from './TaskCard';
 import { Button } from '@/shared/ui/button';
 
@@ -87,6 +88,9 @@ export function TaskColumnInner({
       {/* Header — no nodrag, so React Flow drags the node from here */}
       <div className="flex items-center justify-between px-3 py-2.5 border-b border-[var(--app-border)] cursor-grab active:cursor-grabbing select-none">
         <div className="flex items-center gap-2 min-w-0 flex-1">
+          <span title="Drag to move" className="shrink-0 app-subtle">
+            <GripVertical className="h-3.5 w-3.5" />
+          </span>
           {editingName ? (
             <input
               ref={nameRef}
@@ -130,8 +134,8 @@ export function TaskColumnInner({
         </div>
       </SortableContext>
 
-      {/* Add task footer — nodrag so clicking doesn't start a node drag */}
-      <div className="nodrag p-2 border-t border-[var(--app-border)]">
+      {/* Add task footer — hidden for Slash Out columns */}
+      {column.column_type !== 'completed' && <div className="nodrag p-2 border-t border-[var(--app-border)]">
         {addingTask ? (
           <div className="flex flex-col gap-1.5">
             <input
@@ -159,7 +163,7 @@ export function TaskColumnInner({
             + Add task
           </button>
         )}
-      </div>
+      </div>}
 
       {/* Context menu portal — renders to document.body, position is irrelevant here */}
       {contextMenu && createPortal(

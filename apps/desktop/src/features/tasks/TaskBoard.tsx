@@ -194,8 +194,8 @@ export function TaskBoard({ onRoadmapTitleChange }: TaskBoardProps) {
         target: link.to_column_id,
         type: 'smoothstep',
         animated: true,
-        markerEnd: { type: MarkerType.ArrowClosed, color: '#818cf8' },
-        style: { stroke: '#818cf8', strokeWidth: 2 },
+        markerEnd: { type: MarkerType.ArrowClosed, color: 'var(--app-subtle)' },
+        style: { stroke: 'var(--app-subtle)', strokeWidth: 1.5 },
       }))
     );
   }, [links, setEdges]);
@@ -216,8 +216,8 @@ export function TaskBoard({ onRoadmapTitleChange }: TaskBoardProps) {
         target: connection.target!,
         type: 'smoothstep',
         animated: true,
-        markerEnd: { type: MarkerType.ArrowClosed, color: '#818cf8' },
-        style: { stroke: '#818cf8', strokeWidth: 2 },
+        markerEnd: { type: MarkerType.ArrowClosed, color: 'var(--app-subtle)' },
+        style: { stroke: 'var(--app-subtle)', strokeWidth: 1.5 },
       }, prev));
     }
   }, [addLink, setEdges]);
