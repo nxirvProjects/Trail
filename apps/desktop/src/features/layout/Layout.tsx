@@ -10,8 +10,8 @@ import {
   DropdownMenuTrigger,
 } from '@/shared/ui/dropdown-menu';
 import {
-  BarChart3,
   Briefcase,
+  LayoutGrid,
   ListTodo,
   Monitor,
   Moon,
@@ -27,7 +27,7 @@ interface LayoutProps {
   onSectionChange: (section: AppSection) => void;
 }
 
-export type AppSection = 'applications' | 'todos' | 'stats';
+export type AppSection = 'applications' | 'todos' | 'dashboard';
 
 type ThemeMode = 'light' | 'dark' | 'auto';
 type BackgroundThemeKey =
@@ -43,9 +43,8 @@ const BACKGROUND_MODE_STORAGE_KEY = 'trail.themeMode';
 const BACKGROUND_THEME_STORAGE_KEY = 'trail.backgroundTheme';
 
 const sections: { id: AppSection; label: string; icon: ReactNode }[] = [
-  { id: 'applications', label: 'Applications', icon: <Briefcase className="h-4 w-4" /> },
+  { id: 'applications', label: 'Job Applications', icon: <Briefcase className="h-4 w-4" /> },
   { id: 'todos', label: 'Roadmaps', icon: <ListTodo className="h-4 w-4" /> },
-  { id: 'stats', label: 'Overall Stats', icon: <BarChart3 className="h-4 w-4" /> },
 ];
 
 const backgroundOptions: Array<{
@@ -173,24 +172,51 @@ export function Layout({ children, activeSection, onSectionChange }: LayoutProps
         </DropdownMenu>
       </header>
 
-      <aside className="app-chrome-surface min-h-0">
-        <nav className="p-2 space-y-1">
-          {sections.map((section) => (
-            <button
-              key={section.id}
-              type="button"
-              onClick={() => onSectionChange(section.id)}
-              className={`w-full flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors ${
-                activeSection === section.id
-                  ? 'bg-[var(--app-hover)] text-[var(--app-text)]'
-                  : 'text-[var(--app-muted)] hover:bg-[var(--app-hover)] hover:text-[var(--app-text)]'
-              } ${sidebarCollapsed ? 'justify-center' : ''}`}
-              title={sidebarCollapsed ? section.label : undefined}
-            >
-              {section.icon}
-              {!sidebarCollapsed && <span>{section.label}</span>}
-            </button>
-          ))}
+      <aside className="app-chrome-surface min-h-0 flex flex-col">
+        <nav className="p-3 flex flex-col gap-4">
+          {/* Dashboard header row */}
+          <button
+            type="button"
+            onClick={() => onSectionChange('dashboard')}
+            className={`flex items-center gap-2 rounded-lg px-2 py-1 w-full transition-colors ${
+              activeSection === 'dashboard'
+                ? 'bg-[var(--app-hover)] text-[var(--app-text)]'
+                : 'hover:bg-[var(--app-hover)] text-[var(--app-text)]'
+            } ${sidebarCollapsed ? 'justify-center' : ''}`}
+            title={sidebarCollapsed ? 'Dashboard' : undefined}
+          >
+            <LayoutGrid className="h-4 w-4 shrink-0" />
+            {!sidebarCollapsed && (
+              <span className="text-sm font-semibold">Dashboard</span>
+            )}
+          </button>
+
+          <div className="border-t border-[var(--app-border)]" />
+
+          {/* MY PAGES section */}
+          <div className="flex flex-col gap-0.5">
+            {!sidebarCollapsed && (
+              <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-widest app-subtle">
+                My Pages
+              </p>
+            )}
+            {sections.map((section) => (
+              <button
+                key={section.id}
+                type="button"
+                onClick={() => onSectionChange(section.id)}
+                className={`w-full flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors ${
+                  activeSection === section.id
+                    ? 'bg-[var(--app-hover)] font-medium text-[var(--app-text)]'
+                    : 'text-[var(--app-muted)] hover:bg-[var(--app-hover)] hover:text-[var(--app-text)]'
+                } ${sidebarCollapsed ? 'justify-center' : ''}`}
+                title={sidebarCollapsed ? section.label : undefined}
+              >
+                {section.icon}
+                {!sidebarCollapsed && <span>{section.label}</span>}
+              </button>
+            ))}
+          </div>
         </nav>
       </aside>
 

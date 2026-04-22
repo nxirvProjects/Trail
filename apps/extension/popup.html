@@ -26,7 +26,6 @@
     <div class="tabs">
       <button id="tabApplications" class="tab active">Applications</button>
       <button id="tabLinks" class="tab">My Links</button>
-      <button id="tabStats" class="tab">Stats</button>
       <button id="tabSettings" class="tab">Settings</button>
     </div>
   </div>
@@ -73,80 +72,6 @@
     </div>
   </div>
 
-  <!-- Stats View -->
-  <div id="statsView" class="content hidden">
-    <h2 class="section-header">Your Progress</h2>
-
-    <!-- Level/XP Card -->
-    <div class="stat-card level-card">
-      <div class="level-header">
-        <div>
-          <p class="level-title">
-            <span id="prestigeStars"></span><span id="levelTitle">Beginner Job Hunter</span>
-          </p>
-          <p class="level-number">Level <span id="levelNumber">1</span></p>
-        </div>
-        <div class="level-badge">📊</div>
-      </div>
-      <div class="xp-progress">
-        <div class="xp-bar">
-          <div class="xp-fill" id="xpFill"></div>
-        </div>
-        <p class="xp-text"><span id="currentXP">0</span> / <span id="nextLevelXP">100</span> XP</p>
-      </div>
-    </div>
-
-    <!-- Streak Counter -->
-    <div class="stat-card streak-card">
-      <div class="streak-header">
-        <div class="streak-icon" id="streakIcon">🔥</div>
-        <div class="streak-info">
-          <h3>Current Streak</h3>
-          <p class="streak-count"><span id="streakCount">0</span> days</p>
-        </div>
-      </div>
-      <div class="streak-stats">
-        <div class="streak-stat-item">
-          <p class="streak-stat-label">Longest Streak</p>
-          <p class="streak-stat-value"><span id="longestStreak">0</span> days</p>
-        </div>
-      </div>
-      <p class="streak-subtitle">Keep applying to maintain your streak!</p>
-    </div>
-
-    <!-- Simple Stats -->
-    <div class="stat-card simple-stats-card">
-      <h3 class="stats-title">Application Stats</h3>
-      <div class="stats-grid">
-        <div class="stat-item">
-          <p class="stat-label">This Week</p>
-          <p class="stat-value" id="statsThisWeek">0</p>
-        </div>
-        <div class="stat-item">
-          <p class="stat-label">This Month</p>
-          <p class="stat-value" id="statsThisMonth">0</p>
-        </div>
-        <div class="stat-item">
-          <p class="stat-label">Weekly Avg</p>
-          <p class="stat-value" id="statsWeeklyAvg">0</p>
-        </div>
-        <div class="stat-item">
-          <p class="stat-label">Total</p>
-          <p class="stat-value" id="statsTotal">0</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Activity Log -->
-    <div class="stat-card activity-log-card">
-      <h3 class="stats-title">Activity Log</h3>
-      <p class="activity-log-subtitle">Recent XP gains, penalties, and level ups</p>
-      <div id="activityLogList" class="activity-log-list">
-        <!-- Activity log entries will be inserted here -->
-      </div>
-    </div>
-  </div>
-
   <!-- Settings View -->
   <div id="settingsView" class="content hidden">
     <h2 class="section-header">Settings</h2>
@@ -186,12 +111,6 @@
       </div>
     </div>
 
-    <!-- Clear Data Section -->
-    <div class="danger-zone">
-      <h3 class="danger-zone-title">⚠️ Danger Zone</h3>
-      <p class="danger-zone-description">Clearing all data will permanently delete all your applications, links, and stats. This cannot be undone.</p>
-      <button id="clearDataBtn" class="btn btn-danger">Clear All Data</button>
-    </div>
   </div>
 
   <!-- Hidden file input for CSV import -->

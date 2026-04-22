@@ -3,6 +3,7 @@ import { Layout } from '@/features/layout/Layout';
 import { TaskBoard } from '@/features/tasks/TaskBoard';
 import { JobsTable } from '@/features/jobs/JobsTable';
 import { JobCardModal } from '@/features/jobs/JobCardModal';
+import { DashboardView } from '@/features/dashboard/DashboardView';
 import { useJobs } from '@/features/jobs/useJobs';
 import { useAuth } from '@/features/auth/useAuth';
 import type { Job } from '@job-logger/shared';
@@ -25,8 +26,7 @@ interface ImportSummary {
 }
 
 export default function BoardPage() {
-  const [section, setSection] = useState<AppSection>('applications');
-  const [todoTitle, setTodoTitle] = useState('Roadmap');
+  const [section, setSection] = useState<AppSection>('dashboard');  const [todoTitle, setTodoTitle] = useState('Roadmap');
   const formattedTodoTitle = todoTitle.replace(/\b\w/g, (char) => char.toUpperCase());
   const { user } = useAuth();
   const { jobs, updateJob, deleteJob, addJob, addJobsBulk, clearJobs } = useJobs(user?.id);
@@ -151,10 +151,12 @@ export default function BoardPage() {
 
   return (
     <Layout activeSection={section} onSectionChange={setSection}>
-      <div className="flex items-center justify-between mb-4 shrink-0">
-        <h2 className={`font-semibold tracking-tight app-text ${section === 'todos' ? 'text-2xl' : 'text-xl'}`}>
-          {section === 'applications' ? 'Applications' : section === 'todos' ? formattedTodoTitle : 'Overall Stats'}
-        </h2>
+      <div className={`flex items-center justify-between shrink-0 ${section !== 'dashboard' ? 'mb-4' : ''}`}>
+        {section !== 'dashboard' && (
+          <h2 className={`font-semibold tracking-tight app-text ${section === 'todos' ? 'text-2xl' : 'text-xl'}`}>
+            {section === 'applications' ? 'Job Applications' : formattedTodoTitle}
+          </h2>
+        )}
 
         {section === 'applications' && (
           <div className="flex items-center gap-2">
@@ -186,7 +188,9 @@ export default function BoardPage() {
       />
 
       <div className="flex-1 overflow-hidden flex flex-col pb-1">
-        {section === 'applications' ? (
+        {section === 'dashboard' ? (
+          <DashboardView jobs={jobs} />
+        ) : section === 'applications' ? (
           <JobsTable
             jobs={jobs}
             onEditJob={handleJobClick}
@@ -195,12 +199,8 @@ export default function BoardPage() {
               if (target) setDeleteTarget(target);
             }}
           />
-        ) : section === 'todos' ? (
-          <TaskBoard onRoadmapTitleChange={setTodoTitle} />
         ) : (
-          <div className="flex-1 rounded-xl border border-dashed border-[var(--app-border)] app-surface-elevated flex items-center justify-center">
-            <p className="text-sm app-subtle">Overall stats coming soon.</p>
-          </div>
+          <TaskBoard onRoadmapTitleChange={setTodoTitle} />
         )}
       </div>
 

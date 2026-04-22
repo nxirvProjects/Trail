@@ -147,6 +147,44 @@ body {
   color: var(--app-subtle);
 }
 
+/* ── Bento card: tilt + border glow ─────────────────────────────────────── */
+.bento-card {
+  --glow-x: 50%;
+  --glow-y: 50%;
+  --glow-opacity: 0;
+  --glow-radius: 240px;
+  --bento-glow-rgb: 99, 102, 241;
+  position: relative;
+  will-change: transform;
+  transition: transform 0.4s ease;
+}
+
+.bento-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 1.5px;
+  background: radial-gradient(
+    var(--glow-radius) circle at var(--glow-x) var(--glow-y),
+    rgba(var(--bento-glow-rgb), 0.9) 0%,
+    rgba(var(--bento-glow-rgb), 0.45) 35%,
+    transparent 65%
+  );
+  border-radius: inherit;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: var(--glow-opacity);
+  transition: opacity 0.3s ease;
+  z-index: 10;
+}
+
 :root[data-shell-mode='light'] .canvas-board {
   border-color: rgba(100, 116, 139, 0.34);
 }

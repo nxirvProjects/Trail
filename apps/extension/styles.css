@@ -80,9 +80,11 @@
     display: flex;
     gap: 8px;
   }
-  
+
   .tab {
-    padding: 8px 16px;
+    flex: 1;
+    text-align: center;
+    padding: 8px 0;
     border-radius: 8px;
     font-weight: 600;
     font-size: 13px;
